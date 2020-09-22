@@ -1,0 +1,253 @@
+<html lang="en"> 
+<head> 
+    <title>Ecriture rapide</title> 
+    <style>
+        body { 
+            color: black; 
+            text-align: center; 
+            background: -webkit-gradient(linear, left bottom, left top, from(#1d1c1d), to(#8d8b90));
+            background: -webkit-linear-gradient(bottom, #1d1c1d 0%, #79787b 100%);
+            background: -moz-linear-gradient(bottom, #1d1c1d 0%, #8d8b90 100%);
+            background: -o-linear-gradient(bottom, #1d1c1d 0%, #8d8b90 100%);
+            background: linear-gradient(to top, #1d1c1d 0%, #8d8b90 100%);
+            background-size: cover; 
+        } 
+
+        .container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        } 
+
+        .heading { 
+            margin-bottom: 20px; 
+            font-size: 3rem; 
+            color: black; 
+        } 
+
+        .header { 
+            display: flex; 
+            align-items: center; 
+        } 
+
+        .text { 
+            text-transform: uppercase;
+            font-size: 1.6rem;
+            font-weight: 250;
+            padding-bottom: 10px;
+        } 
+
+        .timer, .score{ 
+            border: solid #f7c035 1px;
+            margin: 20px;
+            height: 100px;
+            width: 100px;
+            border-radius: 15px;
+            padding: 25px; 
+            font-size: 40px;
+        } 
+
+        .area { 
+            background-color: white; 
+            width: 40%; 
+            margin: 15px; 
+            padding: 20px; 
+        } 
+
+        .refresh { 
+            display: none; 
+            background-color: #black; 
+            font-size: 1.5rem; 
+            padding: 10px; 
+            border: 0px; 
+        } 
+
+        .incorrect { 
+            color: red; 
+            text-decoration: underline; 
+        } 
+
+        .correct { 
+            color: blue; 
+        } 
+        .demarer{
+            font-size: 30px;
+        }
+    </style>
+</head> 
+
+<body> 
+    <div class="container"> 
+        <div class="header"> 
+            <div class="timer"> 
+                <div class="text">Time</div> 
+                <div class="temps">25s</div> 
+            </div> 
+            <div class="score"> 
+                <div class="text">Score</div> 
+                <div class="scores">0</div> 
+            </div> 
+        </div> 
+        <div class="demarer">Démarrer</div> 
+        <textarea class="area"
+            placeholder="C'est parti pour écrire"
+            oninput="addText()"
+            onfocus="debutJeux()"> 
+        </textarea> 
+        <button class="refresh" onclick="reset()"> Redémarrer</button>
+        <div class="Final"> 
+            <div class="pseudo"></div> 
+            <div class="scores"></div> 
+        </div> 
+    </div> 
+
+
+    <script> 
+
+        // défini le temps imparti
+        const LIMIT = 25; 
+
+        // definie les phrases 
+        const array = [ 
+            "Tester c'est douter", 
+            "Un canard vaut mieux qu'un connard", 
+            "Le doctor se trouve dans le tardis", 
+            "La vie est difficile mais pas insurmontable", 
+            "Je sais plus quoi dire", 
+            "La phrase de la fin est infini"
+        ]; 
+
+        // defini les elements du html
+        const timer_text = document.querySelector(".temps"); 
+        const texts = document.querySelector(".demarer"); 
+        const area = document.querySelector(".area"); 
+        const refresh = document.querySelector(".refresh");
+        const score_text = document.querySelector(".scores"); 
+        const pseudoInsert = document.querySelector(".pseudo"); 
+
+        let tempsimparti = LIMIT; 
+        let temps= 0; 
+        let space = ""; 
+        let num = 0; 
+        let timer = null; 
+        let score = 0;
+        let total_score = 0; 
+        let pseudo = '';
+
+        // fonction qui identifie les characteres grace a un span
+        function update() { 
+            texts.textContent = null; 
+            space = array[num]; 
+
+            space.split('').forEach(char => { 
+            const charSpan = document.createElement('span') 
+            charSpan.innerText = char 
+            texts.appendChild(charSpan) 
+            }) 
+
+            if (num < array.length - 1) 
+                num++; 
+            else
+                num = 0; 
+        } 
+        // Fonction qui recupere le texte saisie par le joueur
+        function addText() { 
+
+            curr_input = area.value; 
+            curr_input_array = curr_input.split(''); 
+
+
+            score = 0;
+
+            quoteSpanArray = texts.querySelectorAll('span'); 
+            quoteSpanArray.forEach((char, index) => { 
+            const typedChar = curr_input_array[index] 
+
+
+                if (typedChar == null) { 
+                    char.classList.remove('correct'); 
+                    char.classList.remove('incorrect'); 
+
+                    // correct
+                    } else if (typedChar === char.innerText) { 
+                        char.classList.add('correct'); 
+                        char.classList.remove('incorrect'); 
+
+                        //j'incrémente le score à chaque bonne reponse
+                        score++; 
+
+                    // incorrect 
+                    } else { 
+                        char.classList.add('incorrect'); 
+                        char.classList.remove('correct'); 
+                    
+                } 
+            });  
+            // affiche le nombre de bonne reponse 
+            score_text.textContent = total_score + score; 
+            
+
+            if (curr_input.length == space.length) { 
+                update(); 
+
+                total_score += score; 
+
+                area.value = ""; 
+            } 
+
+        } 
+
+        function debutJeux() { 
+
+            reset(); 
+            update(); 
+
+            // reinitialise le temps
+            clearInterval(timer); 
+            timer = setInterval(changeTimer, 1000); 
+        } 
+
+        function reset() { 
+            tempsimparti = LIMIT; 
+            temps= 0; 
+            score = 0;
+            total_score = 0; 
+            num = 0; 
+            area.disabled = false; 
+            
+
+            area.value = ""; 
+            texts.textContent = "Tester c'est douter"; 
+            timer_text.textContent = tempsimparti + 's'; 
+            score_text.textContent = 0; 
+            refresh.style.display = "none"; 
+        } 
+
+        function changeTimer() { 
+            if (tempsimparti > 0) { 
+                tempsimparti--; 
+                timer_text.textContent = tempsimparti + "s"; 
+            } 
+            else { 
+            // fin du jeu
+                finJeux(); 
+            } 
+        } 
+        function finJeux() { 
+            clearInterval(timer); 
+            area.disabled = true; 
+            texts.textContent = "Cliquer pour redémarrer le jeu ^^"; 
+            refresh.style.display = "block"; 
+            localStorage.setItem('scores' , total_score);
+            const scoreFinish = localStorage.getItem('scores') ;
+            const pseudo = prompt('veuillez écrire votre speudo');
+            localStorage.setItem('pseudo' , pseudo);
+            const pseudoInsert = localStorage.getItem('pseudo') ;
+            console.log(scoreFinish);
+            console.log(pseudoInsert);
+        } 
+        
+
+    </script> 
+</body> 
+</html> 
